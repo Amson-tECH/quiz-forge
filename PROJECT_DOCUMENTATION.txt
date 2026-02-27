@@ -1,0 +1,249 @@
+QuizForge - Project Documentation
+
+Version: 1.0.0
+Project Type: Fullstack web application (AI quiz generation)
+
+1. Project Overview
+QuizForge is a fullstack application that converts slide content or PDF text into interactive quizzes using Google's Gemini API.
+It is designed for learners, educators, and teams who want fast quiz creation without authentication.
+
+Users can:
+- Paste educational content directly into a text area.
+- Upload a PDF and extract text on the backend.
+- Configure quiz difficulty, question type, and question count.
+- Optionally enable time-bound mode with per-question timer.
+- Generate and take animated quizzes.
+- View scored results with answer review.
+
+2. Core Capabilities
+- AI-generated quizzes from arbitrary text content.
+- Objective (MCQ) and Theory (long-answer) quiz modes.
+- Configurable difficulty: Easy, Medium, Hard.
+- Server-side validation of max question count (20).
+- Built-in Java quiz endpoint for instant use.
+- Randomized question ordering and option ordering.
+- Frontend timer flow for time-bound quiz sessions.
+- Animated user experience with Framer Motion.
+
+3. Tech Stack
+Frontend (client):
+- React (Vite)
+- Tailwind CSS
+- Framer Motion
+- React Router
+- Axios
+- canvas-confetti
+
+Backend (server):
+- Node.js
+- Express.js
+- @google/generative-ai (Gemini)
+- dotenv
+- cors
+- body-parser
+- multer
+- pdf-parse
+
+4. High-Level Architecture
+Repository layout:
+- client/: React app
+- server/: Express API
+- package.json (root): orchestration scripts for running both apps
+
+Backend architecture pattern:
+- config/: environment and Gemini model configuration
+- controllers/: request/response handlers
+- routes/: API route definitions
+- services/: business logic (AI prompt, parsing, quiz shaping)
+- utils/: helpers (validation, shuffle, PDF extract, JSON parsing)
+- data/: built-in static datasets (Java quiz)
+
+Frontend architecture pattern:
+- pages/: route-level screens (Landing, Setup, Quiz, Results)
+- context/: global quiz state management
+- services/: API integration layer (Axios)
+- components/: reusable visual/UX components
+- utils/: quiz evaluation and formatting helpers
+
+5. User Flow
+A) Landing (/)
+- Displays QuizForge hero.
+- "Start Building Quiz" goes to setup.
+- "Start Java Quiz" fetches prebuilt Java questions.
+
+B) Setup (/setup)
+- User pastes content or uploads PDF.
+- User selects difficulty, question type, question count.
+- User enables optional timer and sets seconds per question.
+- "Generate Quiz" calls backend AI endpoint.
+
+C) Quiz (/quiz)
+- Displays one question at a time with progress bar.
+- MCQ selection for objective mode.
+- Text input for theory mode.
+- Next button disabled until answered.
+- If timer enabled, question can auto-submit at timeout.
+
+D) Results (/results)
+- Displays score summary and percentage ring.
+- Shows correct/incorrect breakdown.
+- Shows review of user answers vs correct answers.
+- Retry and Back Home actions.
+- Confetti animation for high score.
+
+6. Backend API Documentation
+Base path: /api
+
+1) GET /api/health
+Purpose:
+- Health check for API status.
+
+Response:
+- { ok: true, service: "quizforge-api" }
+
+2) POST /api/generate-quiz
+Purpose:
+- Generate a quiz from user-provided content using Gemini.
+
+Request body:
+- content: string (required)
+- difficulty: "easy" | "medium" | "hard"
+- questionType: "objective" | "theory"
+- questionCount: number (1 to 20)
+- timerPerQuestion: number (optional, 5 to 600)
+
+Validation rules:
+- content must be non-empty.
+- questionCount must be integer between 1 and 20.
+- difficulty and questionType must be valid enum values.
+- timerPerQuestion must be valid if provided.
+
+Response shape:
+- title: string
+- questionType: "objective" | "theory"
+- difficulty: "easy" | "medium" | "hard"
+- questions: array
+  - id: number
+  - question: string
+  - options: string[]
+  - correctAnswer: string
+  - explanation: string
+
+3) GET /api/builtin/java
+Purpose:
+- Return built-in Java fundamentals quiz.
+
+Behavior:
+- Questions are shuffled.
+- Options are shuffled.
+
+4) POST /api/extract-pdf
+Purpose:
+- Extract text from uploaded PDF.
+
+Request:
+- multipart/form-data with file field name: "file"
+
+Response:
+- { text: "...extracted content..." }
+
+7. Gemini Integration Details
+Gemini model configuration:
+- Configured in server/config/gemini.js
+- Uses GEMINI_API_KEY and GEMINI_MODEL from env
+
+Prompt strategy:
+- Strict JSON-only output requirement
+- Enforces question type, difficulty, and question count
+- Defines exact schema expected in AI response
+
+Safety/parsing strategy:
+- JSON is extracted from raw text/fenced code when needed
+- Response is parsed and normalized
+- Invalid/malformed AI output is rejected with 502-level error
+
+8. Scoring and Quiz Logic
+- Objective mode scoring: strict answer equality (case-insensitive normalization)
+- Theory mode scoring: heuristic token overlap/contains strategy
+- Final score includes:
+  - correct count
+  - incorrect count
+  - total
+  - percentage
+
+9. Styling and UX System
+Design direction:
+- Dark neon visual theme
+- Glassmorphism cards
+- Indigo/violet/cyan gradient accents
+- Rounded 2xl shapes and glow effects
+
+Animation usage:
+- Page transitions
+- Question transitions
+- Progress animation
+- Loading state animation
+- Results reveal animation
+
+10. Environment Configuration
+Server env file:
+- Path: server/.env
+
+Keys:
+- NODE_ENV=development
+- PORT=5000
+- CLIENT_ORIGIN=http://localhost:5173
+- GEMINI_API_KEY=your_real_key
+- GEMINI_MODEL=gemini-1.5-flash
+
+Client env file:
+- Path: client/.env
+
+Keys:
+- VITE_API_URL=http://localhost:5000/api
+
+11. Run Instructions
+Install dependencies:
+- npm install
+- npm --prefix server install
+- npm --prefix client install
+
+Development (both apps):
+- npm run dev
+
+Individual:
+- npm run dev:server
+- npm run dev:client
+
+Production:
+- Build frontend: npm run build
+- Start backend: npm run start
+
+12. Root Scripts Summary
+Root package scripts:
+- dev: runs server and client concurrently
+- dev:server: server only
+- dev:client: client only
+- build: client build
+- start: server start
+
+13. Project Strengths
+- Clean modular backend structure for scaling.
+- Clear separation of concerns (routes/controllers/services/utils).
+- Modern SPA frontend with reusable components and global state.
+- AI prompt + parse + sanitize pipeline to stabilize generated output.
+- Good baseline UX for educational quiz workflows.
+
+14. Current Scope Notes
+- No authentication system (by design).
+- No database persistence (session-based usage).
+- Quiz and results state live in frontend runtime state.
+
+15. Suggested Future Enhancements
+- Persistent quiz history with database.
+- User accounts and roles.
+- Export results as PDF/CSV.
+- Better semantic grading for theory answers.
+- Test coverage (unit + integration + e2e).
+
+End of document.
