@@ -11,9 +11,23 @@
 body {
   @apply min-h-screen bg-forge-base text-slate-100 font-body antialiased;
   background-image:
+    linear-gradient(rgba(99, 102, 241, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(34, 211, 238, 0.05) 1px, transparent 1px),
     radial-gradient(circle at 20% 5%, rgba(125, 107, 255, 0.16), transparent 30%),
     radial-gradient(circle at 85% 0%, rgba(61, 216, 255, 0.12), transparent 26%),
     linear-gradient(150deg, #050611 0%, #070b1a 40%, #0a1030 100%);
+  background-size:
+    34px 34px,
+    34px 34px,
+    auto,
+    auto,
+    auto;
+  background-position:
+    center center,
+    center center,
+    center center,
+    center center,
+    center center;
 }
 
 .glass {
