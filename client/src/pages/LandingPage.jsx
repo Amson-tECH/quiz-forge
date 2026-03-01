@@ -56,7 +56,8 @@ const LandingPage = () => {
         <div className="mx-auto max-w-2xl py-10 sm:py-14 lg:py-16">
           <div className="hidden sm:mb-8 sm:flex sm:justify-center">
             <div className="relative rounded-full px-3 py-1 text-sm/6 text-gray-400 ring-1 ring-white/10 hover:ring-white/20 sm:text-sm">
-              Announcing our next round of funding.
+              Introducing QuizForge -{" "}
+              <span className="text-cyan-300">⚡</span>
             </div>
           </div>
           <div className="text-center">
